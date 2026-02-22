@@ -175,13 +175,24 @@ ansible-playbook site.yml --tags smart_tests  # redeploy SMART test timers
 
 These aren't automated (require interactivity or one-time setup):
 
-1. **Fan control** — requires interactive hardware detection:
+1. **SSH host key mismatch** — after a rebuild the NAS gets a new SSH host key,
+   and clients will refuse to connect with a scary "REMOTE HOST IDENTIFICATION
+   HAS CHANGED" warning. Fix on each client machine:
+   ```bash
+   ssh-keygen -R cokert-B550M-ITX-ac
+   # or if connecting by Tailscale name:
+   ssh-keygen -R nas
+   ssh-keygen -R nas.jackalope-peacock.ts.net
+   ```
+   The next `ssh` will prompt to accept the new fingerprint as normal.
+
+2. **Fan control** — requires interactive hardware detection:
    ```bash
    sudo sensors-detect
    sudo pwmconfig
    ```
 
-3. **Samba passwords** — if the samba users already existed and passwords need resetting:
+3. **Samba passwords** — if samba users already existed and passwords need resetting:
    ```bash
    sudo smbpasswd cokert
    sudo smbpasswd tm
