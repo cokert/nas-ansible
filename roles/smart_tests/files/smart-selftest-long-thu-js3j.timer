@@ -1,0 +1,10 @@
+[Unit]
+Description=SMART long self-test weekly Thursday (JS3J)
+
+[Timer]
+OnCalendar=Thu *-*-* 03:00:00
+Persistent=true
+Unit=smart-selftest@long-thu-js3j.service
+
+[Install]
+WantedBy=timers.target

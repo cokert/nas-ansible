@@ -1,0 +1,14 @@
+# /etc/ssh/sshd_config — NAS (cokert-B550M-ITX-ac)
+# Key-only auth; no passwords.
+
+Include /etc/ssh/sshd_config.d/*.conf
+
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+UsePAM no
+
+X11Forwarding yes
+PrintMotd no
+
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/openssh/sftp-server

@@ -1,0 +1,15 @@
+---
+- name: Deploy smartd.conf
+  copy:
+    src: smartd.conf
+    dest: /etc/smartmontools/smartd.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart smartd
+
+- name: Enable and start smartd
+  service:
+    name: smartd
+    enabled: true
+    state: started

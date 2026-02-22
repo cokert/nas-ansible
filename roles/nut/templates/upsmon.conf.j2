@@ -1,0 +1,12 @@
+MONITOR {{ nut_ups_name }}@{{ nut_ups_host }}:{{ nut_ups_port }} 1 {{ nut_ups_username }} {{ vault_nut_password }} secondary
+MINSUPPLIES 1
+SHUTDOWNCMD "/sbin/shutdown -h +0"
+POLLFREQ 5
+POLLFREQALERT 5
+HOSTSYNC 15
+DEADTIME 15
+POWERDOWNFLAG "/etc/killpower"
+OFFDURATION 30
+RBWARNTIME 43200
+NOCOMMWARNTIME 300
+FINALDELAY 5

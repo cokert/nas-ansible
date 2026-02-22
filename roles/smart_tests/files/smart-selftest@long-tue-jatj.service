@@ -1,0 +1,7 @@
+[Unit]
+Description=Run SMART long self-test weekly Tuesday (JATJ)
+
+[Service]
+Type=oneshot
+Environment=DEVICE=/dev/disk/by-id/ata-WDC_WD100EFGX-68CPLN0_WD-B203JATJ
+ExecStart=/usr/sbin/smartctl -t long ${DEVICE}

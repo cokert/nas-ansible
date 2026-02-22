@@ -1,0 +1,80 @@
+---
+# ----- Share directories -----
+
+- name: Create /srv/media
+  file:
+    path: /srv/media
+    state: directory
+    owner: root
+    group: media
+    mode: "2775"
+
+- name: Create /srv/timemachine
+  file:
+    path: /srv/timemachine
+    state: directory
+    owner: root
+    group: timemachine
+    mode: "2770"
+
+- name: Create /srv/backups
+  file:
+    path: /srv/backups
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create /srv/compose
+  file:
+    path: /srv/compose
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# ----- Config -----
+
+- name: Deploy smb.conf
+  copy:
+    src: smb.conf
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/bin/testparm -s %s
+  notify: restart samba
+
+# ----- Samba users -----
+# smbpasswd is not idempotent (no way to check existing password).
+# Passwords are set every run; no_log prevents secrets from appearing in output.
+
+- name: Ensure cokert exists as samba user
+  shell: |
+    if ! pdbedit -L | grep -q '^cokert:'; then
+      echo -e "{{ vault_samba_password_cokert }}\n{{ vault_samba_password_cokert }}" | smbpasswd -s -a cokert
+    fi
+  no_log: true
+  changed_when: false
+
+- name: Ensure tm exists as samba user
+  shell: |
+    if ! pdbedit -L | grep -q '^tm:'; then
+      echo -e "{{ vault_samba_password_tm }}\n{{ vault_samba_password_tm }}" | smbpasswd -s -a tm
+    fi
+  no_log: true
+  changed_when: false
+
+# ----- Services -----
+
+- name: Enable and start smbd
+  service:
+    name: smbd
+    enabled: true
+    state: started
+
+- name: Enable and start nmbd
+  service:
+    name: nmbd
+    enabled: true
+    state: started

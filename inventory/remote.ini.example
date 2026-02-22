@@ -1,0 +1,8 @@
+# Remote inventory: run Ansible from a laptop targeting the NAS over SSH.
+# Usage: ansible-playbook -i inventory/remote.ini site.yml
+# Prerequisite: SSH key already authorized on the NAS (or use --ask-pass).
+#
+# Copy this file to remote.ini and fill in your values:
+#   cp inventory/remote.ini.example inventory/remote.ini
+[nas]
+your-nas-hostname ansible_host=192.168.x.x ansible_user=your-username

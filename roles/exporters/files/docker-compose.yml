@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - smartctl-exporter
+      - zfs-exporter
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    network_mode: host
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --web.listen-address=:9110
+    restart: always
+
+  smartctl-exporter:
+    image: ghcr.io/cokert/smartctl-exporter:latest
+    privileged: true
+    user: root
+    volumes:
+      - /dev:/dev:ro
+      - /run/udev:/run/udev:ro
+    command:
+      - --smartctl.interval=2m
+      - --smartctl.rescan=0s
+      - --smartctl.scan-device-type=by-id
+    restart: always
+
+  zfs-exporter:
+    image: ghcr.io/cokert/zfs-exporter:latest
+    privileged: true
+    volumes:
+      - /dev/zfs:/dev/zfs
+    command:
+      - --web.listen-address=:9134
+    restart: always

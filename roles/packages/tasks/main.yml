@@ -1,0 +1,130 @@
+---
+# ----- Kernel: lock to 6.8, block HWE -----
+# Ubuntu 24.04 ships ZFS 2.2.2, which only supports kernels up to ~6.8.
+# The HWE stack (24.04.2+) brings 6.11/6.14/6.17 — ZFS DKMS fails to build
+# on 6.9+ due to a block device API change (bdev_open_by_path removed).
+# Launchpad bug: https://bugs.launchpad.net/bugs/2117125
+#
+# Fix: remove HWE metapackages if present, hold standard kernel metapackages.
+# This runs BEFORE apt upgrade so the hold is in place before anything upgrades.
+
+- name: Remove HWE kernel metapackages if present
+  apt:
+    name:
+      - linux-generic-hwe-24.04
+      - linux-image-generic-hwe-24.04
+      - linux-headers-generic-hwe-24.04
+    state: absent
+    purge: false
+
+- name: Ensure standard kernel metapackage is installed
+  apt:
+    name: linux-generic
+    state: present
+    update_cache: true
+
+- name: Hold standard kernel metapackages to prevent upgrade to HWE
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - linux-generic
+    - linux-image-generic
+    - linux-headers-generic
+
+# ----- Docker apt repository -----
+- name: Create /etc/apt/keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Download Docker GPG key
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Add Docker apt repository
+  apt_repository:
+    repo: >-
+      deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/ubuntu
+      {{ ansible_distribution_release }} stable
+    filename: docker
+    state: present
+
+# ----- Tailscale apt repository -----
+- name: Download Tailscale GPG key
+  get_url:
+    url: https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
+
+- name: Add Tailscale apt repository
+  apt_repository:
+    repo: >-
+      deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg]
+      https://pkgs.tailscale.com/stable/ubuntu
+      {{ ansible_distribution_release }} main
+    filename: tailscale
+    state: present
+
+# ----- Package installation -----
+- name: Update apt cache and upgrade packages (safe — respects kernel hold)
+  apt:
+    update_cache: true
+    upgrade: safe
+    cache_valid_time: 3600
+
+- name: Install NAS packages
+  apt:
+    name:
+      # Core tools
+      - curl
+      - git
+      - unzip
+      - tmux
+      - zsh
+      - ripgrep
+      - tldr
+      # Monitoring
+      - btop
+      - htop
+      - iotop
+      - lm-sensors
+      - fancontrol
+      - fio
+      - iperf3
+      # SSH server
+      - openssh-server
+      # ZFS
+      - zfsutils-linux
+      - zfs-zed
+      # Samba
+      - samba
+      # SMART
+      - smartmontools
+      # NUT (UPS)
+      - nut-client
+      # Docker (from Docker repo)
+      - containerd.io
+      - docker-ce
+      - docker-ce-cli
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - docker-ce-rootless-extras
+      # Tailscale (from Tailscale repo)
+      - tailscale
+      # Build tools (needed if rebuilding custom exporter images)
+      - build-essential
+      - make
+      - golang-go
+      - libreadline-dev
+      # Desktop / GUI (matches current install)
+      - ubuntu-desktop-minimal
+      - ubuntu-restricted-addons
+      - psensor
+      - xclip
+      - solaar
+    state: present

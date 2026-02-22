@@ -1,0 +1,10 @@
+[Unit]
+Description=SMART short self-test daily (ELRJ)
+
+[Timer]
+OnCalendar=*-*-* 03:10:00
+Persistent=true
+Unit=smart-selftest@short-elrj.service
+
+[Install]
+WantedBy=timers.target

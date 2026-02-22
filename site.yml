@@ -1,0 +1,46 @@
+---
+# NAS playbook — applies to the [nas] group defined in inventory.
+# Default: inventory/hosts.ini (localhost, run on the NAS itself)
+# Remote:  inventory/remote.ini (run from a laptop over SSH)
+#
+# Usage:
+#   ansible-playbook site.yml                         # on-NAS, default inventory
+#   ansible-playbook -i inventory/remote.ini site.yml # from laptop
+#   ansible-playbook site.yml --ask-vault-pass        # if vault is encrypted
+#   ansible-playbook site.yml --tags packages         # run only one role
+#   ansible-playbook site.yml -e zfs_create_pool=true # create pool from scratch
+
+- name: Configure NAS
+  hosts: nas
+  become: true
+
+  roles:
+    - role: system
+      tags: [system]
+
+    - role: packages
+      tags: [packages]
+
+    - role: users
+      tags: [users]
+
+    - role: ssh
+      tags: [ssh]
+
+    - role: zfs
+      tags: [zfs]
+
+    - role: samba
+      tags: [samba]
+
+    - role: smartd
+      tags: [smartd]
+
+    - role: smart_tests
+      tags: [smart_tests]
+
+    - role: nut
+      tags: [nut]
+
+    - role: exporters
+      tags: [exporters]

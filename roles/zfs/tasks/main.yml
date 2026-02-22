@@ -1,0 +1,106 @@
+---
+# ----- Pool: import or create -----
+
+- name: Check if ZFS pool '{{ zfs_pool_name }}' is already imported
+  command: zpool list {{ zfs_pool_name }}
+  register: pool_check
+  failed_when: false
+  changed_when: false
+
+- name: Attempt to import existing ZFS pool '{{ zfs_pool_name }}'
+  command: zpool import -f {{ zfs_pool_name }}
+  when: pool_check.rc != 0
+  register: pool_import
+  failed_when: false
+
+- name: Fail if pool not found and zfs_create_pool is not set
+  fail:
+    msg: |
+      ZFS pool '{{ zfs_pool_name }}' was not found and could not be imported.
+      If the drives are new and you want to CREATE a fresh pool (WARNING: destructive!),
+      re-run with:
+        ansible-playbook site.yml -e zfs_create_pool=true
+  when:
+    - pool_check.rc != 0
+    - pool_import is defined
+    - pool_import.rc != 0
+    - not (zfs_create_pool | bool)
+
+- name: Create ZFS pool '{{ zfs_pool_name }}' (DESTRUCTIVE — only with zfs_create_pool=true)
+  command: >
+    zpool create {{ zfs_pool_name }}
+    mirror
+      /dev/disk/by-id/{{ zfs_pool_drives.mirror0[0] }}
+      /dev/disk/by-id/{{ zfs_pool_drives.mirror0[1] }}
+    mirror
+      /dev/disk/by-id/{{ zfs_pool_drives.mirror1[0] }}
+      /dev/disk/by-id/{{ zfs_pool_drives.mirror1[1] }}
+    -o ashift=12
+  when:
+    - pool_check.rc != 0
+    - pool_import is defined
+    - pool_import.rc != 0
+    - zfs_create_pool | bool
+
+# ----- Pool properties -----
+
+- name: Set pool-level properties on tank
+  command: zfs set {{ item.property }}={{ item.value }} {{ zfs_pool_name }}
+  loop: "{{ zfs_pool_properties }}"
+  changed_when: false
+
+# ----- Datasets -----
+
+- name: Get list of existing ZFS datasets
+  command: zfs list -H -o name
+  register: zfs_existing
+  changed_when: false
+
+- name: Create tank/srv
+  command: zfs create tank/srv
+  when: "'tank/srv' not in zfs_existing.stdout_lines"
+
+- name: Create tank/srv/backups
+  command: zfs create tank/srv/backups
+  when: "'tank/srv/backups' not in zfs_existing.stdout_lines"
+
+- name: Create tank/srv/compose
+  command: zfs create tank/srv/compose
+  when: "'tank/srv/compose' not in zfs_existing.stdout_lines"
+
+- name: Create tank/srv/media
+  command: zfs create tank/srv/media
+  when: "'tank/srv/media' not in zfs_existing.stdout_lines"
+
+- name: Create tank/srv/timemachine
+  command: zfs create tank/srv/timemachine
+  when: "'tank/srv/timemachine' not in zfs_existing.stdout_lines"
+
+# Dataset properties (idempotent — zfs set is safe to re-run)
+- name: Set tank mountpoint=/tank
+  command: zfs set mountpoint=/tank tank
+  changed_when: false
+
+- name: Set tank/srv mountpoint=/srv
+  command: zfs set mountpoint=/srv tank/srv
+  changed_when: false
+
+- name: Set tank/srv compression=zstd
+  command: zfs set compression=zstd tank/srv
+  changed_when: false
+
+- name: Set tank/srv atime=off
+  command: zfs set atime=off tank/srv
+  changed_when: false
+
+- name: Set tank/srv/compose quota=200G
+  command: zfs set quota=200G tank/srv/compose
+  changed_when: false
+
+- name: Set tank/srv/timemachine quota=2T
+  command: zfs set quota=2T tank/srv/timemachine
+  changed_when: false
+
+- name: Set tank/srv/media recordsize=1M
+  command: zfs set recordsize=1M tank/srv/media
+  changed_when: false

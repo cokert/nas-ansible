@@ -1,0 +1,77 @@
+---
+# Non-secret variables for the NAS playbook.
+# Secrets live in group_vars/all/vault.yml (ansible-vault encrypted).
+
+# ----- System -----
+nas_hostname: cokert-B550M-ITX-ac
+
+# ----- Users -----
+nas_users:
+  - name: tm
+    uid: 1001
+    group: tm
+    shell: /usr/sbin/nologin
+    create_home: true
+
+nas_cokert_groups:
+  - sudo
+  - adm
+  - docker
+  - media
+  - timemachine
+  - cdrom
+  - dip
+  - plugdev
+  - users
+  - lpadmin
+
+# ----- ZFS -----
+# Set to true ONLY to create a brand-new pool (destructive!).
+# Normal case (fresh OS install, drives untouched): leave false.
+# Override at runtime: ansible-playbook site.yml -e zfs_create_pool=true
+zfs_create_pool: false
+
+zfs_pool_name: tank
+
+# Drive identifiers for zpool create (only used if zfs_create_pool=true)
+zfs_pool_drives:
+  mirror0:
+    - ata-WDC_WD100EFGX-68CPLN0_WD-B203A2SJ
+    - ata-WDC_WD100EFGX-68CPLN0_WD-B203ELRJ
+  mirror1:
+    - ata-WDC_WD100EFGX-68CPLN0_WD-B203JATJ
+    - ata-WDC_WD100EFGX-68CPLN0_WD-B203JS3J
+
+# Datasets to ensure exist with their properties
+zfs_datasets:
+  - name: tank/srv
+    mountpoint: /srv
+    compression: zstd
+    atime: "off"
+  - name: tank/srv/backups
+  - name: tank/srv/compose
+    quota: 200G
+  - name: tank/srv/media
+    recordsize: 1M
+  - name: tank/srv/timemachine
+    quota: 2T
+
+# ZFS pool properties to set on tank
+zfs_pool_properties:
+  - property: compression
+    value: zstd
+  - property: atime
+    value: "off"
+  - property: xattr
+    value: sa
+  - property: acltype
+    value: posix
+
+# ----- NUT -----
+nut_ups_name: asdf
+nut_ups_host: homebridge
+nut_ups_port: 3493
+nut_ups_username: obvserver
+
+# ----- Exporters -----
+exporters_dir: /opt/exporters

@@ -1,0 +1,24 @@
+---
+- name: Deploy /etc/nut/nut.conf
+  copy:
+    src: nut.conf
+    dest: /etc/nut/nut.conf
+    owner: root
+    group: nut
+    mode: "0640"
+  notify: restart nut-client
+
+- name: Deploy /etc/nut/upsmon.conf
+  template:
+    src: upsmon.conf.j2
+    dest: /etc/nut/upsmon.conf
+    owner: root
+    group: nut
+    mode: "0640"
+  notify: restart nut-client
+
+- name: Enable and start nut-client
+  service:
+    name: nut-client
+    enabled: true
+    state: started

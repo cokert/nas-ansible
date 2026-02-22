@@ -1,0 +1,10 @@
+[Unit]
+Description=SMART long self-test weekly Wednesday (ELRJ)
+
+[Timer]
+OnCalendar=Wed *-*-* 03:00:00
+Persistent=true
+Unit=smart-selftest@long-wed-elrj.service
+
+[Install]
+WantedBy=timers.target

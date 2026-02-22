@@ -1,0 +1,34 @@
+---
+- name: Create /opt/exporters directory
+  file:
+    path: /opt/exporters
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy docker-compose.yml
+  copy:
+    src: docker-compose.yml
+    dest: /opt/exporters/docker-compose.yml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy nginx.conf
+  copy:
+    src: nginx.conf
+    dest: /opt/exporters/nginx.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Start exporter stack (docker compose up -d)
+  command: docker compose -f /opt/exporters/docker-compose.yml up -d --remove-orphans
+  changed_when: false

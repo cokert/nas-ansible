@@ -1,0 +1,7 @@
+[Unit]
+Description=Run SMART self-test (%i) on configured disk
+
+[Service]
+Type=oneshot
+Environment=DEVICE=
+ExecStart=/usr/sbin/smartctl -t %i ${DEVICE}

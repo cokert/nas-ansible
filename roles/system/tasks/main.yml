@@ -1,0 +1,11 @@
+---
+- name: Set hostname
+  hostname:
+    name: "{{ nas_hostname }}"
+
+- name: Ensure /etc/hosts has 127.0.1.1 entry
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1 {{ nas_hostname }}"
+    state: present

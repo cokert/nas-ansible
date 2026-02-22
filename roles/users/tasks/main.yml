@@ -1,0 +1,66 @@
+---
+# Groups
+- name: Create group media
+  group:
+    name: media
+    gid: 1001
+    state: present
+
+- name: Create group tm
+  group:
+    name: tm
+    gid: 1002
+    state: present
+
+- name: Create group timemachine
+  group:
+    name: timemachine
+    gid: 1003
+    state: present
+
+# Service account
+- name: Create user tm (TimeMachine service account)
+  user:
+    name: tm
+    uid: 1001
+    group: tm
+    shell: /usr/sbin/nologin
+    create_home: true
+    state: present
+
+# Primary user — uid/gid 1000 is created by the Ubuntu installer.
+# This task ensures the correct supplemental groups are set.
+- name: Ensure cokert is in all required groups
+  user:
+    name: cokert
+    uid: 1000
+    groups: "{{ nas_cokert_groups }}"
+    append: false   # replace supplemental group list (keeps primary group)
+    state: present
+
+# SSH authorized keys
+- name: Create .ssh directory for cokert
+  file:
+    path: /home/cokert/.ssh
+    state: directory
+    owner: cokert
+    group: cokert
+    mode: "0700"
+
+- name: Deploy authorized_keys for cokert
+  copy:
+    src: authorized_keys
+    dest: /home/cokert/.ssh/authorized_keys
+    owner: cokert
+    group: cokert
+    mode: "0600"
+
+# Sudo
+- name: Deploy sudoers file for cokert
+  copy:
+    content: "cokert ALL=(ALL) NOPASSWD: ALL\n"
+    dest: /etc/sudoers.d/cokert
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s
