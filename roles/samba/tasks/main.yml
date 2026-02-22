@@ -46,24 +46,30 @@
   notify: restart samba
 
 # ----- Samba users -----
-# smbpasswd is not idempotent (no way to check existing password).
-# Passwords are set every run; no_log prevents secrets from appearing in output.
+# Check existing users first (pdbedit may fail on an uninitialized database;
+# failed_when: false treats that as "no users" and proceeds to add them).
+# Passwords passed via environment variable to avoid shell quoting issues
+# (echo -e is not portable — dash ignores -e, mangling the password input).
 
-- name: Ensure cokert exists as samba user
-  shell: |
-    if ! pdbedit -L | grep -q '^cokert:'; then
-      echo -e "{{ vault_samba_password_cokert }}\n{{ vault_samba_password_cokert }}" | smbpasswd -s -a cokert
-    fi
-  no_log: true
+- name: Get current samba user list
+  command: pdbedit -L
+  register: samba_users
   changed_when: false
+  failed_when: false
 
-- name: Ensure tm exists as samba user
-  shell: |
-    if ! pdbedit -L | grep -q '^tm:'; then
-      echo -e "{{ vault_samba_password_tm }}\n{{ vault_samba_password_tm }}" | smbpasswd -s -a tm
-    fi
+- name: Add cokert as samba user
+  shell: printf '%s\n%s\n' "$SAMBA_PASS" "$SAMBA_PASS" | smbpasswd -s -a cokert
+  environment:
+    SAMBA_PASS: "{{ vault_samba_password_cokert }}"
+  when: samba_users.stdout is not search('^cokert:', multiline=True)
   no_log: true
-  changed_when: false
+
+- name: Add tm as samba user
+  shell: printf '%s\n%s\n' "$SAMBA_PASS" "$SAMBA_PASS" | smbpasswd -s -a tm
+  environment:
+    SAMBA_PASS: "{{ vault_samba_password_tm }}"
+  when: samba_users.stdout is not search('^tm:', multiline=True)
+  no_log: true
 
 # ----- Services -----
 
