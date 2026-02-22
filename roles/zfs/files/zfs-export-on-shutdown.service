@@ -1,0 +1,13 @@
+[Unit]
+Description=Export ZFS pools on shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+After=zfs-mount.service zfs-share.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStop=/sbin/zpool export -a
+
+[Install]
+WantedBy=zfs.target

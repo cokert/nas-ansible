@@ -1,0 +1,7 @@
+---
+- name: reload systemd and enable export service
+  systemd:
+    name: zfs-export-on-shutdown.service
+    daemon_reload: true
+    enabled: true
+    state: started

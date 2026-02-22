@@ -76,15 +76,35 @@
   command: zfs create tank/srv/timemachine
   when: "'tank/srv/timemachine' not in zfs_existing.stdout_lines"
 
-# Dataset properties (idempotent — zfs set is safe to re-run)
+# Dataset properties
+# Mountpoint changes cause ZFS to unmount and remount the dataset — if anything
+# has the path open (samba, shell, etc.) it will fail with "dataset is busy".
+# Read current values first; only call zfs set if the value actually differs.
+
+- name: Read current ZFS mountpoints
+  command: zfs get -H -p -o name,value mountpoint tank tank/srv
+  register: zfs_mountpoints
+  changed_when: false
+
 - name: Set tank mountpoint=/tank
   command: zfs set mountpoint=/tank tank
-  changed_when: false
+  when: >-
+    zfs_mountpoints.stdout_lines
+    | select('match', '^tank\t')
+    | map('split', '\t')
+    | map(attribute=1)
+    | first != '/tank'
 
 - name: Set tank/srv mountpoint=/srv
   command: zfs set mountpoint=/srv tank/srv
-  changed_when: false
+  when: >-
+    zfs_mountpoints.stdout_lines
+    | select('match', '^tank/srv\t')
+    | map('split', '\t')
+    | map(attribute=1)
+    | first != '/srv'
 
+# Non-mountpoint properties don't cause remounts — safe to set unconditionally.
 - name: Set tank/srv compression=zstd
   command: zfs set compression=zstd tank/srv
   changed_when: false
@@ -103,4 +123,22 @@
 
 - name: Set tank/srv/media recordsize=1M
   command: zfs set recordsize=1M tank/srv/media
+  changed_when: false
+
+# ----- Export on shutdown (Ubuntu packaging gap) -----
+# Ubuntu's zfsutils-linux 2.2.2 does not ship a zfs-unmount or export service.
+# Without this, pools are left unclean on shutdown, causing zfs-import-cache
+# to fail on next boot ("previously in use from another system").
+
+- name: Deploy zfs-export-on-shutdown.service
+  copy:
+    src: zfs-export-on-shutdown.service
+    dest: /etc/systemd/system/zfs-export-on-shutdown.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload systemd and enable export service
+
+- name: Set pool cachefile to /etc/zfs/zpool.cache
+  command: zpool set cachefile=/etc/zfs/zpool.cache {{ zfs_pool_name }}
   changed_when: false
