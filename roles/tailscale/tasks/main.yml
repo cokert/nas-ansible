@@ -1,0 +1,29 @@
+---
+# Check both connectivity and registered hostname. If already connected as
+# 'nas', skip. If connected under a different name (e.g. joined manually
+# before the playbook ran), re-run tailscale up to correct it.
+# Auth keys may be one-time-use; no_log prevents them appearing in output.
+#
+# NOTE: if another device on the tailnet is already named 'nas', this node
+# registers as 'nas-1' with no error — Prometheus scraping breaks silently.
+# The pre-rebuild checklist requires removing the old node from the Tailscale
+# admin console before running this playbook.
+
+- name: Check Tailscale connection status and hostname
+  command: tailscale status --json
+  register: tailscale_status
+  failed_when: false
+  changed_when: false
+
+- name: Parse current Tailscale hostname
+  set_fact:
+    tailscale_current_hostname: >-
+      {{ (tailscale_status.stdout | from_json).Self.HostName | default('') }}
+  when: tailscale_status.rc == 0 and tailscale_status.stdout != ''
+
+- name: Join Tailscale (or correct hostname if wrong)
+  command: tailscale up --auth-key {{ vault_tailscale_auth_key }} --hostname nas
+  when: >-
+    tailscale_status.rc != 0
+    or tailscale_current_hostname | default('') != 'nas'
+  no_log: true

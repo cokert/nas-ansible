@@ -25,6 +25,27 @@ you're on a supported kernel.
 
 ---
 
+## Pre-rebuild checklist
+
+Before wiping the OS SSD:
+
+1. **Export the ZFS pool**
+   ```bash
+   sudo zpool export tank
+   ```
+
+2. **Remove the old Tailscale node** from the [Tailscale admin console](https://login.tailscale.com/admin/machines).
+   The new machine must register as `nas` — if the old node is still present,
+   Tailscale registers the new one as `nas-1` with no error, and Prometheus
+   scraping breaks without alerting.
+
+3. **Shut down / wipe / reinstall Ubuntu 24.04** (see ISO note above).
+
+4. After first boot, run the playbook. The `tailscale` role joins automatically
+   using the vault auth key and registers with `--hostname nas`.
+
+---
+
 ## Playbook execution options
 
 ### Option A — Run on the NAS itself (simplest)
@@ -154,14 +175,7 @@ ansible-playbook site.yml --tags smart_tests  # redeploy SMART test timers
 
 These aren't automated (require interactivity or one-time setup):
 
-1. **Tailscale join**
-   ```bash
-   sudo tailscale up --auth-key <key>
-   # Or interactively:
-   sudo tailscale up
-   ```
-
-2. **Fan control** — requires interactive hardware detection:
+1. **Fan control** — requires interactive hardware detection:
    ```bash
    sudo sensors-detect
    sudo pwmconfig
@@ -200,10 +214,18 @@ The `exporters` role deploys:
 - **smartctl-exporter** (port 9633) — SMART attributes + self-test metrics
 - **zfs-exporter** (port 9134) — ZFS pool/dataset metrics
 
-Metric URLs from Prometheus:
-- `http://<nas-ip>/node/metrics`
-- `http://<nas-ip>/smart/metrics`
-- `http://<nas-ip>/zfs/metrics`
+Prometheus scrapes the NAS via Tailscale MagicDNS. The Tailscale node name
+is **`nas`**, set explicitly by the playbook via `tailscale up --hostname nas`
+(independent of the system hostname). FQDN: `nas.jackalope-peacock.ts.net`.
+The scrape config on the Prometheus host uses:
+
+- `http://nas.jackalope-peacock.ts.net/node/metrics`
+- `http://nas.jackalope-peacock.ts.net/smart/metrics`
+- `http://nas.jackalope-peacock.ts.net/zfs/metrics`
+
+**The Tailscale node name `nas` must be preserved across rebuilds** — if the
+new machine registers under a different name, Prometheus scraping fails and
+alerting fires. See the pre-rebuild checklist below.
 
 Custom images: `ghcr.io/cokert/smartctl-exporter`, `ghcr.io/cokert/zfs-exporter`
 (must be accessible from ghcr.io on the NAS at apply time).
