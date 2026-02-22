@@ -58,6 +58,33 @@ ansible-playbook -i inventory/remote.ini site.yml --ask-vault-pass
 
 ---
 
+## Dry run / check mode
+
+`--check` runs the playbook without making any changes and reports what would differ.
+`--diff` shows the actual file content diff for any config that would be modified.
+
+```bash
+# Dry run with diffs (most useful)
+ansible-playbook site.yml --check --diff --ask-vault-pass
+
+# Dry run a single role
+ansible-playbook site.yml --check --diff --tags samba --ask-vault-pass
+```
+
+**Caveat:** the ZFS role uses raw `command` tasks (`zpool`, `zfs`) which Ansible can't
+simulate — those tasks are skipped or report misleading results in check mode. Skip the ZFS
+role for a reliable dry run of everything else:
+
+```bash
+ansible-playbook site.yml --check --diff --skip-tags zfs --ask-vault-pass
+```
+
+Roles that work reliably in check mode: `system`, `users`, `ssh`, `samba`, `smartd`,
+`smart_tests`, `nut`, `exporters`. The `packages` role is reliable for package state but
+`apt upgrade` output is approximate.
+
+---
+
 ## Secrets (Ansible Vault)
 
 Sensitive values live in `group_vars/all/vault.yml`. Fill them in, then encrypt:
