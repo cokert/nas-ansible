@@ -1,4 +1,14 @@
 ---
+# /run/sshd is created by sshd at startup (tmpfs, gone after reboot).
+# sshd -t needs it to exist for config validation on a fresh install.
+- name: Create SSH privilege separation directory
+  file:
+    path: /run/sshd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Deploy sshd_config
   copy:
     src: sshd_config
