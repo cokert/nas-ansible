@@ -1,6 +1,5 @@
 ---
-# Deploy the template service unit
-- name: Deploy smart-selftest@.service template
+- name: Deploy smart-selftest@.service template unit
   copy:
     src: smart-selftest@.service
     dest: /etc/systemd/system/smart-selftest@.service
@@ -9,88 +8,59 @@
     mode: "0644"
   notify: reload systemd
 
-# Short-test service units (one per drive, hardcoded DEVICE env)
 - name: Deploy short-test service units
-  copy:
-    src: "{{ item }}"
-    dest: /etc/systemd/system/{{ item }}
+  template:
+    src: smart-selftest-short.service.j2
+    dest: /etc/systemd/system/smart-selftest@short-{{ item.tag }}.service
     owner: root
     group: root
     mode: "0644"
-  loop:
-    - smart-selftest@short-a2sj.service
-    - smart-selftest@short-jatj.service
-    - smart-selftest@short-elrj.service
-    - smart-selftest@short-js3j.service
+  loop: "{{ smart_drives }}"
   notify: reload systemd
 
-# Long-test service units
 - name: Deploy long-test service units
-  copy:
-    src: "{{ item }}"
-    dest: /etc/systemd/system/{{ item }}
+  template:
+    src: smart-selftest-long.service.j2
+    dest: /etc/systemd/system/smart-selftest@long-{{ item.long_day | lower }}-{{ item.tag }}.service
     owner: root
     group: root
     mode: "0644"
-  loop:
-    - smart-selftest@long-mon-a2sj.service
-    - smart-selftest@long-tue-jatj.service
-    - smart-selftest@long-wed-elrj.service
-    - smart-selftest@long-thu-js3j.service
+  loop: "{{ smart_drives }}"
   notify: reload systemd
 
-# Short-test timer units
 - name: Deploy short-test timer units
-  copy:
-    src: "{{ item }}"
-    dest: /etc/systemd/system/{{ item }}
+  template:
+    src: smart-selftest-short.timer.j2
+    dest: /etc/systemd/system/smart-selftest-short-{{ item.tag }}.timer
     owner: root
     group: root
     mode: "0644"
-  loop:
-    - smart-selftest-short-a2sj.timer
-    - smart-selftest-short-jatj.timer
-    - smart-selftest-short-elrj.timer
-    - smart-selftest-short-js3j.timer
+  loop: "{{ smart_drives }}"
   notify: reload systemd
 
-# Long-test timer units
 - name: Deploy long-test timer units
-  copy:
-    src: "{{ item }}"
-    dest: /etc/systemd/system/{{ item }}
+  template:
+    src: smart-selftest-long.timer.j2
+    dest: /etc/systemd/system/smart-selftest-long-{{ item.long_day | lower }}-{{ item.tag }}.timer
     owner: root
     group: root
     mode: "0644"
-  loop:
-    - smart-selftest-long-mon-a2sj.timer
-    - smart-selftest-long-tue-jatj.timer
-    - smart-selftest-long-wed-elrj.timer
-    - smart-selftest-long-thu-js3j.timer
+  loop: "{{ smart_drives }}"
   notify: reload systemd
 
 - name: Flush handlers to run daemon-reload before enabling timers
   meta: flush_handlers
 
-# Enable and start all timers
 - name: Enable and start short-test timers
   service:
-    name: "{{ item }}"
+    name: "smart-selftest-short-{{ item.tag }}.timer"
     enabled: true
     state: started
-  loop:
-    - smart-selftest-short-a2sj.timer
-    - smart-selftest-short-jatj.timer
-    - smart-selftest-short-elrj.timer
-    - smart-selftest-short-js3j.timer
+  loop: "{{ smart_drives }}"
 
 - name: Enable and start long-test timers
   service:
-    name: "{{ item }}"
+    name: "smart-selftest-long-{{ item.long_day | lower }}-{{ item.tag }}.timer"
     enabled: true
     state: started
-  loop:
-    - smart-selftest-long-mon-a2sj.timer
-    - smart-selftest-long-tue-jatj.timer
-    - smart-selftest-long-wed-elrj.timer
-    - smart-selftest-long-thu-js3j.timer
+  loop: "{{ smart_drives }}"

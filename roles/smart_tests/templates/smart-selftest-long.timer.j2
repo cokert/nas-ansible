@@ -1,0 +1,10 @@
+[Unit]
+Description=SMART long self-test weekly {{ item.long_day }} ({{ item.tag | upper }})
+
+[Timer]
+OnCalendar={{ item.long_day }} *-*-* 03:00:00
+Persistent=true
+Unit=smart-selftest@long-{{ item.long_day | lower }}-{{ item.tag }}.service
+
+[Install]
+WantedBy=timers.target

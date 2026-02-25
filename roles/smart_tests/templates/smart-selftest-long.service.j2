@@ -1,0 +1,7 @@
+[Unit]
+Description=Run SMART long self-test weekly {{ item.long_day }} ({{ item.tag | upper }})
+
+[Service]
+Type=oneshot
+Environment=DEVICE=/dev/disk/by-id/{{ item.device }}
+ExecStart=/usr/sbin/smartctl -t long ${DEVICE}

@@ -1,0 +1,7 @@
+[Unit]
+Description=Run SMART short self-test ({{ item.tag | upper }})
+
+[Service]
+Type=oneshot
+Environment=DEVICE=/dev/disk/by-id/{{ item.device }}
+ExecStart=/usr/sbin/smartctl -t short ${DEVICE}

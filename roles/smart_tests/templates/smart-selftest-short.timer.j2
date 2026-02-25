@@ -1,0 +1,10 @@
+[Unit]
+Description=SMART short self-test daily ({{ item.tag | upper }})
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+Unit=smart-selftest@short-{{ item.tag }}.service
+
+[Install]
+WantedBy=timers.target

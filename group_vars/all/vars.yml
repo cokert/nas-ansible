@@ -74,6 +74,21 @@ zfs_pool_properties:
   - property: acltype
     value: posix
 
+# ----- SMART tests -----
+smart_drives:
+  - tag: a2sj
+    device: ata-WDC_WD100EFGX-68CPLN0_WD-B203A2SJ
+    long_day: Mon
+  - tag: elrj
+    device: ata-WDC_WD100EFGX-68CPLN0_WD-B203ELRJ
+    long_day: Wed
+  - tag: jatj
+    device: ata-WDC_WD100EFGX-68CPLN0_WD-B203JATJ
+    long_day: Tue
+  - tag: js3j
+    device: ata-WDC_WD100EFGX-68CPLN0_WD-B203JS3J
+    long_day: Thu
+
 # ----- NUT -----
 nut_ups_name: asdf
 nut_ups_host: homebridge
