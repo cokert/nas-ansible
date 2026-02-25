@@ -29,6 +29,7 @@
     enabled: true
     state: started
 
-- name: Start exporter stack (docker compose up -d)
-  command: docker compose -f /opt/exporters/docker-compose.yml up -d --remove-orphans
-  changed_when: false
+- name: Start exporter stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/exporters
+    remove_orphans: true
