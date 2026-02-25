@@ -42,13 +42,6 @@
     - pool_import.rc != 0
     - zfs_create_pool | bool
 
-# ----- Pool properties -----
-
-- name: Set pool-level properties on tank
-  command: zfs set {{ item.property }}={{ item.value }} {{ zfs_pool_name }}
-  loop: "{{ zfs_pool_properties }}"
-  changed_when: false
-
 # ----- Datasets -----
 # community.general.zfs is idempotent: reads current state and only calls
 # zfs set when a value differs. This matters for mountpoint changes, which
@@ -76,6 +69,11 @@
     mode: "0644"
   notify: reload systemd and enable export service
 
+- name: Get current pool cachefile setting
+  command: zpool get -H -o value cachefile {{ zfs_pool_name }}
+  register: zfs_cachefile
+  changed_when: false
+
 - name: Set pool cachefile to /etc/zfs/zpool.cache
   command: zpool set cachefile=/etc/zfs/zpool.cache {{ zfs_pool_name }}
-  changed_when: false
+  when: zfs_cachefile.stdout != '/etc/zfs/zpool.cache'

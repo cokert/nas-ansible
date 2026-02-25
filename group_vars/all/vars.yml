@@ -46,6 +46,10 @@ zfs_pool_drives:
 zfs_datasets:
   - name: tank
     mountpoint: none
+    compression: zstd
+    atime: "off"
+    xattr: sa
+    acltype: posix
   - name: tank/srv
     mountpoint: /srv
     compression: zstd
@@ -62,17 +66,6 @@ zfs_datasets:
   - name: tank/srv/cache
     compression: "off"
     "com.sun:auto-snapshot": "false"
-
-# ZFS pool properties to set on tank
-zfs_pool_properties:
-  - property: compression
-    value: zstd
-  - property: atime
-    value: "off"
-  - property: xattr
-    value: sa
-  - property: acltype
-    value: posix
 
 # ----- SMART tests -----
 smart_drives:
