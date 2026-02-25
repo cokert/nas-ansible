@@ -44,6 +44,8 @@ zfs_pool_drives:
 
 # Datasets to ensure exist with their properties
 zfs_datasets:
+  - name: tank
+    mountpoint: none
   - name: tank/srv
     mountpoint: /srv
     compression: zstd
@@ -55,6 +57,11 @@ zfs_datasets:
     recordsize: 1M
   - name: tank/srv/timemachine
     quota: 2T
+  - name: tank/srv/appdata
+    "com.sun:auto-snapshot": "true"
+  - name: tank/srv/cache
+    compression: "off"
+    "com.sun:auto-snapshot": "false"
 
 # ZFS pool properties to set on tank
 zfs_pool_properties:
