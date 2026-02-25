@@ -59,6 +59,7 @@ Good for: after wiping only the OS SSD, on the same machine.
 sudo apt install ansible git
 git clone <this-repo> ~/nas-ansible
 cd ~/nas-ansible
+ansible-galaxy collection install -r requirements.yml
 ansible-playbook site.yml --ask-vault-pass
 ```
 
@@ -74,6 +75,7 @@ temporarily enabled).
 brew install ansible   # or pip install ansible
 git clone <this-repo> ~/nas-ansible
 cd ~/nas-ansible
+ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory/remote.ini site.yml --ask-vault-pass
 ```
 

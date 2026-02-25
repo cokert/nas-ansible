@@ -50,80 +50,17 @@
   changed_when: false
 
 # ----- Datasets -----
+# community.general.zfs is idempotent: reads current state and only calls
+# zfs set when a value differs. This matters for mountpoint changes, which
+# cause ZFS to unmount/remount — unnecessary changes risk "dataset is busy"
+# if samba or other services have the path open.
 
-- name: Get list of existing ZFS datasets
-  command: zfs list -H -o name
-  register: zfs_existing
-  changed_when: false
-
-- name: Create tank/srv
-  command: zfs create tank/srv
-  when: "'tank/srv' not in zfs_existing.stdout_lines"
-
-- name: Create tank/srv/backups
-  command: zfs create tank/srv/backups
-  when: "'tank/srv/backups' not in zfs_existing.stdout_lines"
-
-- name: Create tank/srv/compose
-  command: zfs create tank/srv/compose
-  when: "'tank/srv/compose' not in zfs_existing.stdout_lines"
-
-- name: Create tank/srv/media
-  command: zfs create tank/srv/media
-  when: "'tank/srv/media' not in zfs_existing.stdout_lines"
-
-- name: Create tank/srv/timemachine
-  command: zfs create tank/srv/timemachine
-  when: "'tank/srv/timemachine' not in zfs_existing.stdout_lines"
-
-# Dataset properties
-# Mountpoint changes cause ZFS to unmount and remount the dataset — if anything
-# has the path open (samba, shell, etc.) it will fail with "dataset is busy".
-# Read current values first; only call zfs set if the value actually differs.
-
-- name: Read current ZFS mountpoints
-  command: zfs get -H -p -o name,value mountpoint tank tank/srv
-  register: zfs_mountpoints
-  changed_when: false
-
-- name: Set tank mountpoint=/tank
-  command: zfs set mountpoint=/tank tank
-  when: >-
-    zfs_mountpoints.stdout_lines
-    | select('match', '^tank\t')
-    | map('split', '\t')
-    | map(attribute=1)
-    | first != '/tank'
-
-- name: Set tank/srv mountpoint=/srv
-  command: zfs set mountpoint=/srv tank/srv
-  when: >-
-    zfs_mountpoints.stdout_lines
-    | select('match', '^tank/srv\t')
-    | map('split', '\t')
-    | map(attribute=1)
-    | first != '/srv'
-
-# Non-mountpoint properties don't cause remounts — safe to set unconditionally.
-- name: Set tank/srv compression=zstd
-  command: zfs set compression=zstd tank/srv
-  changed_when: false
-
-- name: Set tank/srv atime=off
-  command: zfs set atime=off tank/srv
-  changed_when: false
-
-- name: Set tank/srv/compose quota=200G
-  command: zfs set quota=200G tank/srv/compose
-  changed_when: false
-
-- name: Set tank/srv/timemachine quota=2T
-  command: zfs set quota=2T tank/srv/timemachine
-  changed_when: false
-
-- name: Set tank/srv/media recordsize=1M
-  command: zfs set recordsize=1M tank/srv/media
-  changed_when: false
+- name: Ensure ZFS datasets exist with properties
+  community.general.zfs:
+    name: "{{ item.name }}"
+    state: present
+    extra_zfs_properties: "{{ item | dict2items | rejectattr('key', 'equalto', 'name') | items2dict }}"
+  loop: "{{ zfs_datasets }}"
 
 # ----- Export on shutdown (Ubuntu packaging gap) -----
 # Ubuntu's zfsutils-linux 2.2.2 does not ship a zfs-unmount or export service.
