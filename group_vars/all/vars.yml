@@ -63,6 +63,8 @@ zfs_datasets:
     quota: 2T
   - name: tank/srv/appdata
     "com.sun:auto-snapshot": "true"
+  - name: tank/srv/appdata/nextcloud
+    "com.sun:auto-snapshot": "true"
   - name: tank/srv/cache
     compression: "off"
     "com.sun:auto-snapshot": "false"
