@@ -96,8 +96,5 @@ nut_ups_host: homebridge
 nut_ups_port: 3493
 nut_ups_username: obvserver
 
-# ----- Tailscale -----
-nas_tailscale_fqdn: nas.jackalope-peacock.ts.net
-
 # ----- Exporters -----
 exporters_dir: /opt/exporters
