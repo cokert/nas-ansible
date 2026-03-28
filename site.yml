@@ -47,3 +47,6 @@
 
     - role: tailscale
       tags: [tailscale]
+
+    - role: kvm
+      tags: [kvm]

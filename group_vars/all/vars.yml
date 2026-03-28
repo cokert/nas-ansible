@@ -24,6 +24,8 @@ nas_cokert_groups:
   - plugdev
   - users
   - lpadmin
+  - libvirt
+  - kvm
 
 # ----- ZFS -----
 # Set to true ONLY to create a brand-new pool (destructive!).
@@ -67,6 +69,10 @@ zfs_datasets:
     "com.sun:auto-snapshot": "true"
   - name: tank/srv/cache
     compression: "off"
+    "com.sun:auto-snapshot": "false"
+  - name: tank/srv/vms
+    recordsize: 64K        # matches qcow2 cluster size
+    compression: "off"     # VM images compress poorly and it costs CPU
     "com.sun:auto-snapshot": "false"
 
 # ----- SMART tests -----

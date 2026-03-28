@@ -121,6 +121,17 @@
       - make
       - golang-go
       - libreadline-dev
+      # KVM / libvirt
+      - qemu-kvm
+      - qemu-utils
+      - libvirt-daemon-system
+      - libvirt-clients
+      - virtinst
+      - bridge-utils
+      - ovmf
+      - cpu-checker
+      - swtpm
+      - swtpm-tools
       # Desktop / GUI (matches current install)
       - ubuntu-desktop-minimal
       - ubuntu-restricted-addons
