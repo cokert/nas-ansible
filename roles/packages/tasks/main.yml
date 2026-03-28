@@ -144,7 +144,17 @@
       - solaar
     state: present
 
-# ----- cockpit-zfs-manager (GitHub release, no apt repo for noble) -----
+# ----- znapzend + cockpit-zfs-manager (not in Ubuntu repos, install from GitHub) -----
+- name: Get latest znapzend release from GitHub
+  uri:
+    url: https://api.github.com/repos/oetiker/znapzend/releases/latest
+    return_content: true
+  register: znapzend_release
+
+- name: Install znapzend
+  apt:
+    deb: "{{ znapzend_release.json.assets | selectattr('name', 'match', '.*ubuntu24.*\\.deb$') | map(attribute='browser_download_url') | first }}"
+
 - name: Get latest cockpit-zfs-manager release from GitHub
   uri:
     url: https://api.github.com/repos/45Drives/cockpit-zfs-manager/releases/latest
