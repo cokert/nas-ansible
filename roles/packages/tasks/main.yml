@@ -164,3 +164,23 @@
 - name: Install cockpit-zfs-manager
   apt:
     deb: "{{ czm_release.json.assets | selectattr('name', 'match', '.*\\.deb$') | map(attribute='browser_download_url') | first }}"
+
+- name: Get latest cockpit-navigator release from GitHub
+  uri:
+    url: https://api.github.com/repos/45Drives/cockpit-navigator/releases/latest
+    return_content: true
+  register: navigator_release
+
+- name: Install cockpit-navigator
+  apt:
+    deb: "{{ navigator_release.json.assets | selectattr('name', 'match', '.*focal.*\\.deb$') | map(attribute='browser_download_url') | first }}"
+
+- name: Get latest cockpit-file-sharing release from GitHub
+  uri:
+    url: https://api.github.com/repos/45Drives/cockpit-file-sharing/releases/latest
+    return_content: true
+  register: cfs_release
+
+- name: Install cockpit-file-sharing
+  apt:
+    deb: "{{ cfs_release.json.assets | selectattr('name', 'match', '.*focal.*\\.deb$') | map(attribute='browser_download_url') | first }}"
