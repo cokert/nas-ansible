@@ -121,7 +121,9 @@
       - make
       - golang-go
       - libreadline-dev
-      # KVM / libvirt
+      # KVM / libvirt / Cockpit
+      - cockpit
+      - cockpit-machines
       - qemu-kvm
       - qemu-utils
       - libvirt-daemon-system
