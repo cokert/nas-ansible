@@ -1,0 +1,7 @@
+---
+- name: reload systemd and enable tailscale cert timer
+  systemd:
+    name: tailscale-cert-renewal.timer
+    daemon_reload: true
+    enabled: true
+    state: started
