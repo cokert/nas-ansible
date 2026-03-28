@@ -124,6 +124,7 @@
       # KVM / libvirt / Cockpit
       - cockpit
       - cockpit-machines
+      - python3-lxml
       - qemu-kvm
       - qemu-utils
       - libvirt-daemon-system

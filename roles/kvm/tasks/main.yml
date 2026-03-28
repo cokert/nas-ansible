@@ -12,32 +12,33 @@
     state: started
 
 - name: Set libvirt default network to autostart
-  command: virsh net-autostart default
-  register: net_autostart
-  changed_when: "'marked as autostarted' in net_autostart.stdout"
-  failed_when: net_autostart.rc != 0 and 'already marked' not in net_autostart.stdout
+  community.libvirt.virt_net:
+    name: default
+    autostart: true
 
-- name: Start libvirt default network if not active
-  command: virsh net-start default
-  register: net_start
-  changed_when: net_start.rc == 0
-  failed_when: net_start.rc != 0 and 'already active' not in net_start.stderr
+- name: Start libvirt default network
+  community.libvirt.virt_net:
+    name: default
+    state: active
 
-- name: Create libvirt storage pool for VMs (tank/srv/vms)
-  command: >
-    virsh pool-define-as vms dir --target /srv/vms
-  register: pool_define
-  changed_when: pool_define.rc == 0
-  failed_when: pool_define.rc != 0 and 'already exists' not in pool_define.stderr
+- name: Define vms storage pool
+  community.libvirt.virt_pool:
+    name: vms
+    command: define
+    xml: |
+      <pool type='dir'>
+        <name>vms</name>
+        <target>
+          <path>/srv/vms</path>
+        </target>
+      </pool>
 
-- name: Set VM storage pool to autostart
-  command: virsh pool-autostart vms
-  register: pool_autostart
-  changed_when: "'marked as autostarted' in pool_autostart.stdout"
-  failed_when: pool_autostart.rc != 0 and 'already marked' not in pool_autostart.stdout
+- name: Set vms storage pool to autostart
+  community.libvirt.virt_pool:
+    name: vms
+    autostart: true
 
-- name: Start VM storage pool if not active
-  command: virsh pool-start vms
-  register: pool_start
-  changed_when: pool_start.rc == 0
-  failed_when: pool_start.rc != 0 and 'already active' not in pool_start.stderr
+- name: Start vms storage pool
+  community.libvirt.virt_pool:
+    name: vms
+    state: active
