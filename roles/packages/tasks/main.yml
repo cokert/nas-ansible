@@ -165,15 +165,15 @@
   apt:
     deb: "{{ czm_release.json.assets | selectattr('name', 'match', '.*\\.deb$') | map(attribute='browser_download_url') | first }}"
 
-- name: Get latest cockpit-navigator release from GitHub
+- name: Get cockpit-navigator releases from GitHub
   uri:
-    url: https://api.github.com/repos/45Drives/cockpit-navigator/releases/latest
+    url: https://api.github.com/repos/45Drives/cockpit-navigator/releases
     return_content: true
-  register: navigator_release
+  register: navigator_releases
 
 - name: Install cockpit-navigator
   apt:
-    deb: "{{ navigator_release.json.assets | selectattr('name', 'match', '.*focal.*\\.deb$') | map(attribute='browser_download_url') | first }}"
+    deb: "{{ navigator_releases.json | map(attribute='assets') | flatten | selectattr('name', 'match', '.*focal.*\\.deb$') | map(attribute='browser_download_url') | first }}"
 
 - name: Get latest cockpit-file-sharing release from GitHub
   uri:
