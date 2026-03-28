@@ -3,11 +3,6 @@
   hostname:
     name: "{{ nas_hostname }}"
 
-- name: Mask openipmi (LSB init script causes Cockpit to spin)
-  systemd:
-    name: openipmi
-    masked: true
-
 - name: Ensure /etc/hosts has 127.0.1.1 entry
   lineinfile:
     path: /etc/hosts
