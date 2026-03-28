@@ -21,10 +21,11 @@
     name: default
     state: active
 
-- name: Define vms storage pool
+- name: Define vms storage pool and set autostart
   community.libvirt.virt_pool:
     name: vms
-    command: define
+    state: present
+    autostart: true
     xml: |
       <pool type='dir'>
         <name>vms</name>
@@ -32,11 +33,6 @@
           <path>/srv/vms</path>
         </target>
       </pool>
-
-- name: Set vms storage pool to autostart
-  community.libvirt.virt_pool:
-    name: vms
-    autostart: true
 
 - name: Start vms storage pool
   community.libvirt.virt_pool:
