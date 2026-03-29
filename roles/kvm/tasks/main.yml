@@ -7,6 +7,12 @@
     state: present
   notify: Restart libvirtd
 
+- name: Remove netplan-generated NM connection for {{ kvm_bridge_iface }} if present
+  community.general.nmcli:
+    conn_name: "netplan-{{ kvm_bridge_iface }}"
+    state: absent
+  register: netplan_conn_removed
+
 - name: Create br0 bridge connection
   community.general.nmcli:
     type: bridge
@@ -29,17 +35,19 @@
     state: present
   register: slave_conn
 
-- name: Bring up bridge (async to survive brief network drop)
-  command: nmcli connection up "{{ kvm_bridge_name }}"
+- name: Bring up bridge slave and bridge (async to survive brief network drop)
+  shell: |
+    nmcli connection up "{{ kvm_bridge_name }}-slave"
+    nmcli connection up "{{ kvm_bridge_name }}"
   async: 30
   poll: 0
-  when: bridge_conn.changed or slave_conn.changed
+  when: netplan_conn_removed.changed or bridge_conn.changed or slave_conn.changed
 
 - name: Wait for host to come back after bridge activation
   wait_for_connection:
     delay: 5
     timeout: 60
-  when: bridge_conn.changed or slave_conn.changed
+  when: netplan_conn_removed.changed or bridge_conn.changed or slave_conn.changed
 
 - name: Enable and start cockpit socket
   systemd:
