@@ -1,4 +1,12 @@
 ---
+- name: Disable AppArmor security driver in libvirt (prevents profile load errors)
+  lineinfile:
+    path: /etc/libvirt/qemu.conf
+    regexp: '^#?\s*security_driver\s*='
+    line: 'security_driver = "none"'
+    state: present
+  notify: Restart libvirtd
+
 - name: Enable and start cockpit socket
   systemd:
     name: cockpit.socket
