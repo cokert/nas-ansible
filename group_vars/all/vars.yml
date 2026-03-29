@@ -96,5 +96,9 @@ nut_ups_host: homebridge
 nut_ups_port: 3493
 nut_ups_username: obvserver
 
+# ----- KVM bridge -----
+kvm_bridge_iface: enp4s0
+kvm_bridge_name: br0
+
 # ----- Exporters -----
 exporters_dir: /opt/exporters
