@@ -1,0 +1,18 @@
+services:
+  diun:
+    image: crazymax/diun:latest
+    container_name: diun
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./diun.yml:/diun.yml:ro
+      - diun_data:/data
+    environment:
+      - LOG_LEVEL=info
+      - LOG_JSON=false
+      - CONFIG=/diun.yml
+    ports:
+      - "127.0.0.1:8082:8080"
+    restart: always
+
+volumes:
+  diun_data:

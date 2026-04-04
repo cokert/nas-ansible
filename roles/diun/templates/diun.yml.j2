@@ -1,0 +1,14 @@
+db:
+  path: /data/diun.db
+
+watch:
+  workers: 5
+  schedule: "{{ diun_schedule }}"
+  firstCheckNotif: false
+
+server:
+  addr: :8080
+
+providers:
+  docker:
+    watchByDefault: true

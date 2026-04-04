@@ -1,0 +1,37 @@
+---
+- name: Create /opt/diun directory
+  file:
+    path: /opt/diun
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy docker-compose.yml
+  copy:
+    src: docker-compose.yml
+    dest: /opt/diun/docker-compose.yml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart diun
+
+- name: Deploy diun.yml config
+  template:
+    src: diun.yml.j2
+    dest: /opt/diun/diun.yml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart diun
+
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Start diun stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/diun
+    remove_orphans: true

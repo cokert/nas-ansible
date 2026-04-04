@@ -102,3 +102,6 @@ kvm_bridge_name: br0
 
 # ----- Exporters -----
 exporters_dir: /opt/exporters
+
+# ----- Diun -----
+diun_schedule: "0 */6 * * *"   # check for image updates every 6 hours
