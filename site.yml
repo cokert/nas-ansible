@@ -45,9 +45,6 @@
     - role: exporters
       tags: [exporters]
 
-    - role: diun
-      tags: [diun]
-
     - role: tailscale
       tags: [tailscale]
 

@@ -52,3 +52,19 @@ services:
     command:
       - --web.listen-address=:9134
     restart: always
+
+  diun:
+    image: crazymax/diun:latest
+    container_name: diun
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./diun.yml:/diun.yml:ro
+      - diun_data:/data
+    environment:
+      - LOG_LEVEL=info
+      - LOG_JSON=false
+      - CONFIG=/diun.yml
+    restart: always
+
+volumes:
+  diun_data:

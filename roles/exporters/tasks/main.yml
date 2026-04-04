@@ -23,6 +23,14 @@
     group: root
     mode: "0644"
 
+- name: Deploy diun.yml config
+  template:
+    src: diun.yml.j2
+    dest: /opt/exporters/diun.yml
+    owner: root
+    group: root
+    mode: "0644"
+
 - name: Ensure Docker service is running
   service:
     name: docker
