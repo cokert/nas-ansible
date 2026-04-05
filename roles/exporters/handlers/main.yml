@@ -1,0 +1,6 @@
+---
+- name: Restart diun
+  community.docker.docker_container:
+    name: diun
+    state: started
+    restart: true
