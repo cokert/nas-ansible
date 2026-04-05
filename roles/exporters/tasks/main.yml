@@ -22,6 +22,7 @@
     owner: root
     group: root
     mode: "0644"
+  notify: Restart nginx
 
 - name: Deploy diun.yml config
   template:
