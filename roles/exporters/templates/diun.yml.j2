@@ -6,6 +6,12 @@ watch:
   schedule: "{{ diun_schedule }}"
   firstCheckNotif: false
 
+notif:
+  discord:
+    webhookURL: "{{ diun_discord_webhook }}"
+    mentions:
+      - "@here"
+
 providers:
   docker:
     watchByDefault: true
