@@ -24,15 +24,6 @@
     mode: "0644"
   notify: Restart nginx
 
-- name: Deploy diun.yml config
-  template:
-    src: diun.yml.j2
-    dest: /opt/exporters/diun.yml
-    owner: root
-    group: root
-    mode: "0644"
-  notify: Restart diun
-
 - name: Ensure Docker service is running
   service:
     name: docker
