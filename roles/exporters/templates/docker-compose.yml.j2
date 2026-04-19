@@ -62,4 +62,5 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_SCHEDULE=0 0 */6 * * *
       - DOCKER_API_VERSION=1.41
+      - WATCHTOWER_NOTIFICATION_URL=ntfy://:{{ vault_ntfy_watchtower_token }}@ntfy.timtom.wtf:2586/nas-system?scheme=https
     restart: always
