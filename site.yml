@@ -42,6 +42,9 @@
     - role: nut
       tags: [nut]
 
+    - role: certbot
+      tags: [certbot]
+
     - role: exporters
       tags: [exporters]
 

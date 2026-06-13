@@ -61,6 +61,8 @@ zfs_datasets:
     quota: 200G
   - name: tank/srv/media
     recordsize: 1M
+  - name: tank/srv/roms
+    recordsize: 16K
   - name: tank/srv/timemachine
     quota: 2T
   - name: tank/srv/git
@@ -69,6 +71,8 @@ zfs_datasets:
   - name: tank/srv/appdata
     "com.sun:auto-snapshot": "true"
   - name: tank/srv/appdata/nextcloud
+    "com.sun:auto-snapshot": "true"
+  - name: tank/srv/nextcloud-data
     "com.sun:auto-snapshot": "true"
   - name: tank/srv/cache
     compression: "off"
@@ -102,6 +106,11 @@ nut_ups_username: obvserver
 # ----- KVM bridge -----
 kvm_bridge_iface: enp4s0
 kvm_bridge_name: br0
+
+# ----- Certbot -----
+certbot_email: cokert@gmail.com
+certbot_domains:
+  - cloud.timtom.wtf
 
 # ----- Exporters -----
 exporters_dir: /opt/exporters

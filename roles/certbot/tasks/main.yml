@@ -1,0 +1,41 @@
+---
+- name: Install certbot and dnsimple plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-dns-dnsimple
+    state: present
+    update_cache: false
+
+- name: Deploy DNSimple credentials
+  copy:
+    content: "dns_dnsimple_token = {{ vault_dnsimple_api_token }}\n"
+    dest: /etc/letsencrypt/dnsimple.ini
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Obtain TLS certificates
+  command:
+    cmd: >
+      certbot certonly
+      --non-interactive
+      --dns-dnsimple
+      --dns-dnsimple-credentials /etc/letsencrypt/dnsimple.ini
+      --agree-tos
+      --email {{ certbot_email }}
+      -d {{ item }}
+    creates: "/etc/letsencrypt/live/{{ item }}/fullchain.pem"
+  loop: "{{ certbot_domains }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Deploy nginx renewal hook
+  copy:
+    content: |
+      #!/bin/bash
+      docker restart nginx-services
+    dest: /etc/letsencrypt/renewal-hooks/post/restart-nginx.sh
+    owner: root
+    group: root
+    mode: "0755"
