@@ -5,7 +5,7 @@ Include /etc/ssh/sshd_config.d/*.conf
 
 PasswordAuthentication no
 KbdInteractiveAuthentication no
-UsePAM no
+UsePAM yes
 
 X11Forwarding yes
 PrintMotd no
