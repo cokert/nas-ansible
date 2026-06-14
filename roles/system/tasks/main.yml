@@ -43,3 +43,11 @@
     owner: root
     group: root
     mode: "0755"
+
+- name: Deploy uptime MOTD script
+  copy:
+    src: 99-uptime
+    dest: /etc/update-motd.d.real/99-uptime
+    owner: root
+    group: root
+    mode: "0755"
