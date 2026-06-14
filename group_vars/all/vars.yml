@@ -5,6 +5,10 @@
 # ----- System -----
 nas_hostname: cokert-B550M-ITX-ac
 
+# How often (in hours) to show the full dynamic MOTD on login.
+# /run is tmpfs, so a reboot always resets this and shows it again.
+motd_throttle_hours: 24
+
 # ----- Users -----
 nas_users:
   - name: tm

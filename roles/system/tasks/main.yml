@@ -9,3 +9,37 @@
     regexp: '^127\.0\.1\.1'
     line: "127.0.1.1 {{ nas_hostname }}"
     state: present
+
+# ----- MOTD throttling -----
+# pam_motd runs every script in /etc/update-motd.d on every login (SSH and
+# console), which is a lot of noise when popping in and out repeatedly.
+# Relocate the stock scripts and gate them behind a timestamp so the full
+# MOTD only shows once per motd_throttle_hours; quick reconnects get nothing.
+
+- name: Re-enable any disabled update-motd.d scripts
+  shell: chmod +x /etc/update-motd.d/*
+  changed_when: false
+
+- name: Create directory for real update-motd.d scripts
+  file:
+    path: /etc/update-motd.d.real
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Relocate update-motd.d scripts behind throttle
+  shell: |
+    set -e
+    find /etc/update-motd.d -maxdepth 1 -type f ! -name '00-throttle' -print0 \
+      | xargs -0 -r -I{} mv {} /etc/update-motd.d.real/
+  register: motd_relocate
+  changed_when: motd_relocate.stdout != ""
+
+- name: Deploy MOTD throttle script
+  template:
+    src: motd-throttle.sh.j2
+    dest: /etc/update-motd.d/00-throttle
+    owner: root
+    group: root
+    mode: "0755"

@@ -1,0 +1,18 @@
+#!/bin/sh
+# Show the full dynamic MOTD (/etc/update-motd.d.real/*) at most once every
+# {{ motd_throttle_hours }} hours per boot. /run is tmpfs, so a reboot
+# always shows it again.
+
+STAMP=/run/motd-last-shown
+STALE_SECS=$(( {{ motd_throttle_hours }} * 3600 ))
+
+if [ -f "$STAMP" ]; then
+    last=$(stat -c %Y "$STAMP")
+    now=$(date +%s)
+    if [ $(( now - last )) -lt "$STALE_SECS" ]; then
+        exit 0
+    fi
+fi
+
+touch "$STAMP"
+run-parts /etc/update-motd.d.real
