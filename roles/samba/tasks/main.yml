@@ -17,6 +17,14 @@
     group: timemachine
     mode: "2770"
 
+- name: Create /srv/dump
+  file:
+    path: /srv/dump
+    state: directory
+    owner: root
+    group: dump
+    mode: "2775"
+
 - name: Create /srv/backups
   file:
     path: /srv/backups

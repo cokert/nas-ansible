@@ -18,6 +18,12 @@
     gid: 1003
     state: present
 
+- name: Create group dump
+  group:
+    name: dump
+    gid: 1004
+    state: present
+
 # Service account
 - name: Create user tm (TimeMachine service account)
   user:

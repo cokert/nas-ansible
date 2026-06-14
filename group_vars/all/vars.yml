@@ -19,6 +19,7 @@ nas_cokert_groups:
   - docker
   - media
   - timemachine
+  - dump
   - cdrom
   - dip
   - plugdev
@@ -65,6 +66,8 @@ zfs_datasets:
     recordsize: 16K
   - name: tank/srv/timemachine
     quota: 2T
+  - name: tank/srv/dump
+    "com.sun:auto-snapshot": "true"
   - name: tank/srv/git
     recordsize: 4K
     "com.sun:auto-snapshot": "true"
