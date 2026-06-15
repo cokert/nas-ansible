@@ -51,3 +51,10 @@
     owner: root
     group: root
     mode: "0755"
+
+# The cockpit package drops a nag in /etc/motd.d telling you to enable
+# cockpit.socket — already done, so just remove it.
+- name: Remove cockpit MOTD nag
+  file:
+    path: /etc/motd.d/cockpit
+    state: absent
